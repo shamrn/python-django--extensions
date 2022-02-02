@@ -6,16 +6,24 @@ from project.apps.extensions.functions import get_current_site
 class CustomXFrameOptionsMiddleware(clickjacking.XFrameOptionsMiddleware):
     """Custom middleware for header "X-Frame-Options" http-responses, for Yandex-metrics."""
 
-    def get_xframe_options_value(self, request, response):
+    def process_response(self, request, response):
+        """Overridden method assign 'X-Frame-Options' for http header"""
+
+        # If the method returns False (the link is not this site or Yandex),
+        # assign a header and its value 'DENY'
+        if not self.available_referer(request):
+            return super(CustomXFrameOptionsMiddleware, self).process_response(request, response)
+        return response
+
+    def available_referer(self, request):
         """
-        Overridden method, check redirect link with request, if link is from yandex metric
-        and current site, return value 'SAMEORIGN'
+        Check redirect link with request, if link not is from yandex metric and current site
+        return True
         """
 
-        available_referer = None
-        if http_referer := request.META.get('HTTP_REFERER'):  # NOQA
-            available_referer = re.match(self._get_regex_yandex_metric(request), http_referer)
-        return 'SAMEORIGIN' if available_referer else 'DENY'
+        http_referer = request.META.get('HTTP_REFERER')
+        return True if not http_referer else bool(
+            re.match(self._get_regex_yandex_metric(request), http_referer))
 
     @staticmethod
     def _get_regex_yandex_metric(request):

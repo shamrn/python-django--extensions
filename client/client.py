@@ -7,7 +7,7 @@ from .exceptions import IntegrationBaseException, IntegrationConfigurationExcept
 
 
 class CdekClient:
-    """Base class for implementing client with the `cdek` service"""
+    """Base class for implementing client"""
 
     endpoint = None
     request_method = None

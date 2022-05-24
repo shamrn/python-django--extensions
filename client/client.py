@@ -1,71 +1,74 @@
-from typing import Union, Optional
+from typing import Optional, Tuple
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout, TooManyRedirects
 
-from .exceptions import IntegrationBaseException, IntegrationConfigurationException
 
 
-class CdekClient:
+
+class IntegrationBaseException(Exception):
+    """Integration class that implements exception"""
+
+
+class IntegrationConfigurationException(IntegrationBaseException):
+    """Integration class that implements exception"""
+
+
+from typing import Optional, Tuple
+
+import requests
+from requests.exceptions import RequestException
+
+from extension.integration.exceptions import (
+    IntegrationBaseException,
+    IntegrationConfigurationException
+)
+
+
+class BaseClient:
     """Base class for implementing client"""
 
-    endpoint = None
-    request_method = None
-    url = 'http://example.com/'
+    url = None
 
-    status_code = None
-    result = dict()
-
-    def __init__(self, data: Optional[Union[None, dict]] = None,
-                 params: Optional[Union[None, dict]] = None,
-                 token: Optional[Union[None, str]] = None,
-                 object_id: Optional[Union[None, str]] = None):
+    def __init__(self):
         """Dunder method for class initialization"""
 
-        assert self.endpoint, IntegrationBaseException('`endpoint` parameter is None')
-        assert self.request_method, IntegrationBaseException('`request_method` parameter is None')
+        assert self.url, IntegrationBaseException('`url` parameter is None')
 
-        self.data = data
-        self.params = params
-        self.object_id = object_id
-        self.token = token
-        self._do_request()
+    def do_request(self, request_method,
+                   endpoint: Optional[None | str] = None,
+                   object_id: Optional[None | str] = None,
+                   data: Optional[None | dict] = None,
+                   params: Optional[None | dict] = None,
+                   headers: Optional[None | dict] = None,
+                   ) -> Tuple[int | None, dict]:
+        """Method implements request"""
 
-    def __getattr__(self, item):
-        """Dunder method for assigning class attributes from received data"""
+        url = (f"{self.url}{f'/{endpoint}' if endpoint else ''}"
+               f"{f'/{object_id}' if object_id else ''}")
 
-        result = self.result.get(item, None)
-        if result is None:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
-        return result
+        requests_ = self._get_request_method(request_method)
 
-    def _do_request(self):
-        """Method implements request to the `cdek` service"""
-
-        url = f"{self.url}{self.endpoint}/{self.object_id if self.object_id else ''}"
-        headers = {}  # TODO
-        requests_ = self._get_request_method()
         try:
-            response_cdek = requests_(url=url, params=self.params, data=self.data, headers=headers)
-            self.status_code = response_cdek.status_code
-            response = response_cdek.json()
+            response = requests_(url=url, params=params, data=data, headers=headers)
+            return response.status_code, response.json()
 
-        except (ConnectionError, Timeout):
-            response = {'message': 'Connection/Timeout error.'}
-        except HTTPError:
-            response = {'message': 'Unknown HTTP request.'}
-        except TooManyRedirects:
-            response = {'message': 'Too many redirects.'}
+        except RequestException as exc:
+            response = {'message_exc': f'Request exception: {exc}'}
+        except Exception as exc:
+            response = {'message_exc': f'Base exception: {exc}'}
 
-        self.result = response
+        return None, response
 
-    def _get_request_method(self) -> 'requests':
+    @staticmethod
+    def _get_request_method(request_method: str) -> 'requests':
         """Method returns the request object with a specific method ( GET, POST, ... )"""
 
-        method_raw = self.request_method.lower() if isinstance(self.request_method, str) else None
+        method_raw = request_method.lower() if isinstance(request_method, str) else None
         assert method_raw, IntegrationConfigurationException('`request_method` parameter is None')
 
         method = getattr(requests, method_raw, None)
         assert method, IntegrationConfigurationException('`request_method` isn\'t valid')
 
         return method
+

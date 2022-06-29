@@ -1,25 +1,11 @@
-from typing import Optional, Tuple
-
-import requests
-from requests.exceptions import ConnectionError, HTTPError, Timeout, TooManyRedirects
-
-
-
-
-class IntegrationBaseException(Exception):
-    """Integration class that implements exception"""
-
-
-class IntegrationConfigurationException(IntegrationBaseException):
-    """Integration class that implements exception"""
-
-
+import json
 from typing import Optional, Tuple
 
 import requests
 from requests.exceptions import RequestException
 
-from extension.integration.exceptions import (
+from client.functions import join_path
+from client.exceptions import (
     IntegrationBaseException,
     IntegrationConfigurationException
 )
@@ -28,7 +14,7 @@ from extension.integration.exceptions import (
 class BaseClient:
     """Base class for implementing client"""
 
-    url = None
+    url: str = None
 
     def __init__(self):
         """Dunder method for class initialization"""
@@ -40,25 +26,33 @@ class BaseClient:
                    object_id: Optional[None | str] = None,
                    data: Optional[None | dict] = None,
                    params: Optional[None | dict] = None,
+                   auth: Optional[None | tuple] = None,
                    headers: Optional[None | dict] = None,
-                   ) -> Tuple[int | None, dict]:
+                   ) -> Tuple[dict, int | None]:
         """Method implements request"""
 
-        url = (f"{self.url}{f'/{endpoint}' if endpoint else ''}"
-               f"{f'/{object_id}' if object_id else ''}")
-
+        url = join_path(self.url, paths=[endpoint, object_id])
         requests_ = self._get_request_method(request_method)
 
         try:
-            response = requests_(url=url, params=params, data=data, headers=headers)
-            return response.status_code, response.json()
+            response = requests_(url=url, params=params, auth=auth, headers=headers,
+                                 data=self._get_data(data=data, headers=headers))
+            return response.json(), response.status_code
 
         except RequestException as exc:
             response = {'message_exc': f'Request exception: {exc}'}
         except Exception as exc:
             response = {'message_exc': f'Base exception: {exc}'}
 
-        return None, response
+        return response, None
+
+    @staticmethod
+    def _get_data(data: dict | None, headers: dict | None) -> dict | str:
+        """Method returns json format data if content-type is application/json"""
+
+        if headers and headers.get('Content-Type') == 'application/json':
+            data = json.dumps(data)
+        return data
 
     @staticmethod
     def _get_request_method(request_method: str) -> 'requests':
@@ -71,4 +65,3 @@ class BaseClient:
         assert method, IntegrationConfigurationException('`request_method` isn\'t valid')
 
         return method
-

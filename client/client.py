@@ -4,15 +4,15 @@ from typing import Optional, Tuple
 import requests
 from requests.exceptions import RequestException
 
-from client.functions import join_path
-from client.exceptions import (
+from .exceptions import (
     IntegrationBaseException,
     IntegrationConfigurationException
 )
+from .functions import join_path
 
 
 class BaseClient:
-    """Base class for implementing client"""
+    """The base class implements a basic http client, used for requests"""
 
     url: str = None
 
@@ -21,14 +21,14 @@ class BaseClient:
 
         assert self.url, IntegrationBaseException('`url` parameter is None')
 
-    def do_request(self, request_method,
+    def do_request(self, request_method: str,
                    endpoint: Optional[None | str] = None,
                    object_id: Optional[None | str] = None,
                    data: Optional[None | dict] = None,
                    params: Optional[None | dict] = None,
                    auth: Optional[None | tuple] = None,
                    headers: Optional[None | dict] = None,
-                   ) -> Tuple[dict, int | None]:
+                   use_json: bool = False) -> Tuple[dict, int | None]:
         """Method implements request"""
 
         url = join_path(self.url, paths=[endpoint, object_id])
@@ -36,7 +36,7 @@ class BaseClient:
 
         try:
             response = requests_(url=url, params=params, auth=auth, headers=headers,
-                                 data=self._get_data(data=data, headers=headers))
+                                 data=self._get_data(use_json=use_json, data=data))
             return response.json(), response.status_code
 
         except RequestException as exc:
@@ -47,11 +47,11 @@ class BaseClient:
         return response, None
 
     @staticmethod
-    def _get_data(data: dict | None, headers: dict | None) -> dict | str:
-        """Method returns json format data if content-type is application/json"""
+    def _get_data(use_json: bool, data: dict) -> dict | str:
+        """Method returns json format data if use_json is True"""
 
-        if headers and headers.get('Content-Type') == 'application/json':
-            data = json.dumps(data)
+        if use_json:
+            return json.dumps(data)
         return data
 
     @staticmethod

@@ -22,12 +22,12 @@ class BaseClient:
         assert self.url, IntegrationBaseException('`url` parameter is None')
 
     def do_request(self, request_method: str,
-                   endpoint: Optional[None | str] = None,
-                   object_id: Optional[None | str] = None,
-                   data: Optional[None | dict] = None,
-                   params: Optional[None | dict] = None,
-                   auth: Optional[None | tuple] = None,
-                   headers: Optional[None | dict] = None,
+                   endpoint: Optional[str] = None,
+                   object_id: Optional[str] = None,
+                   data: Optional[dict] = None,
+                   params: Optional[dict] = None,
+                   auth: Optional[tuple] = None,
+                   headers: Optional[dict] = None,
                    use_json: bool = False) -> Tuple[dict, int | None]:
         """Method implements request"""
 

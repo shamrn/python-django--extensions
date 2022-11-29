@@ -1,27 +1,29 @@
-class AddProhibitionAdminMixin:
-    """Prohibition for add in admin"""
+class CreateProhibitionAdminMixin:
+    """Prohibition for create object in admin interface"""
 
     def has_add_permission(self, request, obj=None):  # NOQA
         return False
 
 
 class DeleteProhibitionAdminMixin:
-    """Prohibition for delete in admin"""
+    """Prohibition for delete object in admin interface"""
 
     def has_delete_permission(self, request, obj=None):  # NOQA
         return False
 
 
-class ChangeProhibitionAdminMixin:
-    """Prohibition for change in admin"""
+class UpdateProhibitionAdminMixin:
+    """Prohibition for update object in admin interface"""
 
     def has_change_permission(self, request, obj=None):  # NOQA
         return False
 
 
-class AddDeleteProhibitionAdminMixin(AddProhibitionAdminMixin, DeleteProhibitionAdminMixin):
-    """Permission on adding and deleting records for admins"""
+class CreateAndDeleteProhibitionAdminMixin(CreateProhibitionAdminMixin,
+                                           DeleteProhibitionAdminMixin):
+    """Prohibition for create and delete object in admin interface"""
 
 
-class ReadOnlyAdminMixin(AddDeleteProhibitionAdminMixin, ChangeProhibitionAdminMixin):
+class ReadOnlyAdminMixin(CreateAndDeleteProhibitionAdminMixin,
+                         UpdateProhibitionAdminMixin):
     """Read only admin mixin"""

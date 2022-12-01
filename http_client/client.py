@@ -4,15 +4,14 @@ from typing import Optional, Tuple
 import requests
 from requests.exceptions import RequestException
 
-from .exceptions import (
+from exceptions import (
     IntegrationBaseException,
     IntegrationConfigurationException
 )
-from .functions import join_path
 
 
 class BaseClient:
-    """The base class implements a basic http client, used for requests"""
+    """The base class implements a basic http http_client, used for requests"""
 
     url: str = None
 
@@ -31,20 +30,23 @@ class BaseClient:
                    use_json: bool = False) -> Tuple[dict, int | None]:
         """Method implements request"""
 
-        url = join_path(self.url, paths=[endpoint, object_id])
+        url = self._join_path(self.url, paths=[endpoint, object_id])
         requests_ = self._get_request_method(request_method)
 
+        status_code: Optional[int] = None
+
         try:
-            response = requests_(url=url, params=params, auth=auth, headers=headers,
-                                 data=self._get_data(use_json=use_json, data=data))
-            return response.json(), response.status_code
+            raw_response = requests_(url=url, params=params, auth=auth, headers=headers,
+                                     data=self._get_data(use_json=use_json, data=data))
+            status_code = raw_response.status_code
+            response = raw_response.json()
 
         except RequestException as exc:
             response = {'message_exc': f'Request exception: {exc}'}
         except Exception as exc:
             response = {'message_exc': f'Base exception: {exc}'}
 
-        return response, None
+        return response, status_code
 
     @staticmethod
     def _get_data(use_json: bool, data: dict) -> dict | str:
@@ -65,3 +67,9 @@ class BaseClient:
         assert method, IntegrationConfigurationException('`request_method` isn\'t valid')
 
         return method
+
+    @staticmethod
+    def _join_path(url: str, paths: list) -> str:
+        """Method returns full url include paths"""
+
+        return f"{url}/{'/'.join(list(filter(None, paths)))}" if any(paths) else url

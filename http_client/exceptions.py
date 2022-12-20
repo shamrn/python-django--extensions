@@ -1,6 +1,9 @@
-class IntegrationBaseException(Exception):
-    """Integration class that implements exception"""
+"""The file contains exceptions"""
 
 
-class IntegrationConfigurationException(IntegrationBaseException):
-    """Integration class that implements exception"""
+class BaseClientException(Exception):
+    """Base client class that implements exception"""
+
+
+class BaseClientConfigurationException(BaseClientException):
+    """Base client class that implements configuration exception"""

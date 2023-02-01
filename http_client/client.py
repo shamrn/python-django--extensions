@@ -65,7 +65,7 @@ class BaseClient(metaclass=ABCMeta):
 
         try:
             response = request(url=url, params=params, auth=auth, headers=headers,
-                               data=self._get_data(use_json=use_json, data=data))
+                               data=self._get_data(use_json, data))
             self._status_code = response.status_code
             self._result = response.json()
             self._success = True
@@ -79,9 +79,7 @@ class BaseClient(metaclass=ABCMeta):
     def _get_data(use_json: bool, data: dict) -> dict | str:
         """Method returns json format data if use_json is True"""
 
-        if use_json:
-            return json.dumps(data)
-        return data
+        return json.dumps(data) if use_json else data
 
     @staticmethod
     def _get_request_method(request_method: str) -> Callable:

@@ -1,0 +1,22 @@
+# Web-framework
+Django==4.1.6
+
+# `PostgreSQL` adapter
+psycopg2-binary==2.9.5
+
+# REST-API framework (DRF)
+djangorestframework==3.14.0
+
+# Django-filter is a reusable Django application for allowing users to filter querysets dynamically.
+django-filter==22.1
+
+# Drop-in theme for django admin, that utilises AdminLTE 3 & Bootstrap 4 to make yo' admin look jazzy
+django-jazzmin==2.6.0
+
+# Client for `Redis` key-value store
+django-redis==5.2.0
+redis==4.4.2
+
+# Distributed Task Queue (DTQ)
+celery==5.2.4
+kombu==5.2.4

@@ -15,8 +15,6 @@ PRIMARY_INPUT_FIELDS = 'fields_error'
 def custom_exception_handler(exc, context):  # NOQA
     """Custom exception handler"""
 
-    detail = exc.detail
-
     if isinstance(exc, Http404):
         exc = exceptions.NotFound()
     elif isinstance(exc, PermissionDenied):
@@ -29,6 +27,7 @@ def custom_exception_handler(exc, context):  # NOQA
         if getattr(exc, 'wait', None):
             headers['Retry-After'] = '%d' % exc.wait  # NOQA
 
+        detail = exc.detail
         if isinstance(detail, dict) and (custom_validation := detail.get(CUSTOM_VALIDATION)):
             data = custom_validation
         elif isinstance(detail, dict):

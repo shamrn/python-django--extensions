@@ -199,7 +199,7 @@ REDIS_DB = env.get('REDIS_DB')
 # Celery settings
 # --------------------------------------------------------------------------------------------------
 
-USE_CELERY = False
+USE_CELERY = True
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
@@ -48,7 +48,7 @@ def custom_exception_handler(exc, context):  # NOQA
     return None
 
 
-class BaseValidationError(APIException):
+class BaseValidationError(APIException, metaclass=ABCMeta):
     """Base validation error"""
 
     _primary_input: str

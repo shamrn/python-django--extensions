@@ -1,10 +1,9 @@
 from abc import ABCMeta, abstractmethod
 
-from django.test import TestCase
 from rest_framework.reverse import reverse
 
 
-class TestReverse(TestCase, metaclass=ABCMeta):
+class TestReverseMixin(metaclass=ABCMeta):
 
     @property
     @abstractmethod
